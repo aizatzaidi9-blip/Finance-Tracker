@@ -4,6 +4,11 @@ import { getDemoSnapshot } from "@/lib/finance/demo-data";
 import { createServerSupabase } from "@/lib/supabase/server";
 import type { Category, FinanceSnapshot, FinanceTransaction } from "@/types/finance";
 
+type SetupRequiredSnapshot = {
+  setupRequired: true;
+  message?: string;
+};
+
 type ProfileRow = {
   display_name: string | null;
   avatar_url: string | null;
@@ -41,7 +46,7 @@ type TransactionRow = {
   created_at: string;
 };
 
-export async function getFinanceSnapshot(): Promise<FinanceSnapshot> {
+export async function getFinanceSnapshot(): Promise<FinanceSnapshot | SetupRequiredSnapshot> {
   const supabase = await createServerSupabase();
 
   if (!supabase) {
@@ -93,25 +98,43 @@ export async function getFinanceSnapshot(): Promise<FinanceSnapshot> {
         .returns<TransactionRow[]>(),
     ]);
 
-  if (profileResult.error) throw new Error(profileResult.error.message);
-  if (balanceResult.error) throw new Error(balanceResult.error.message);
-  if (categoriesResult.error) throw new Error(categoriesResult.error.message);
-  if (transactionsResult.error) throw new Error(transactionsResult.error.message);
+  const setupError =
+    profileResult.error ??
+    balanceResult.error ??
+    categoriesResult.error ??
+    transactionsResult.error;
+
+  if (setupError) {
+    if (
+      setupError.code === "PGRST205" ||
+      setupError.code === "42P01" ||
+      setupError.message.toLowerCase().includes("schema cache")
+    ) {
+      return {
+        setupRequired: true,
+        message: setupError.message,
+      };
+    }
+
+    throw new Error(setupError.message);
+  }
+
+  const profile = profileResult.data;
+  const balance = balanceResult.data;
 
   return {
     profile: {
-      displayName:
-        profileResult.data.display_name || user.email?.split("@")[0] || "Pengguna",
-      avatarUrl: profileResult.data.avatar_url ?? undefined,
+      displayName: profile?.display_name || user.email?.split("@")[0] || "Pengguna",
+      avatarUrl: profile?.avatar_url ?? undefined,
       currency: "MYR",
       timezone: "Asia/Kuala_Lumpur",
     },
     balances: {
-      dailyBalance: toNumber(balanceResult.data.daily_balance),
-      savingsBalance: toNumber(balanceResult.data.savings_balance),
+      dailyBalance: toNumber(balance?.daily_balance),
+      savingsBalance: toNumber(balance?.savings_balance),
     },
-    categories: categoriesResult.data.map(mapCategory),
-    transactions: transactionsResult.data.map(mapTransaction),
+    categories: (categoriesResult.data ?? []).map(mapCategory),
+    transactions: (transactionsResult.data ?? []).map(mapTransaction),
   };
 
   async function ensureUserRows(userId: string, email: string) {
