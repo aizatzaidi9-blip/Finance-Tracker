@@ -1,9 +1,23 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowRight, ChartPie, ShieldCheck, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { createServerSupabase } from "@/lib/supabase/server";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = await createServerSupabase();
+
+  if (supabase) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user) {
+      redirect("/dashboard");
+    }
+  }
+
   return (
     <main className="min-h-dvh bg-[radial-gradient(circle_at_top_left,#EDE9FE,transparent_36%),linear-gradient(180deg,#FFFFFF_0%,#F7F8FC_70%)] px-5 py-6 text-slate-950">
       <section className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-md flex-col justify-between">

@@ -1,8 +1,10 @@
 import { AppShell } from "@/components/layout/app-shell";
-import { getDemoSnapshot } from "@/lib/finance/demo-data";
+import { getFinanceSnapshot } from "@/lib/finance/snapshot";
 
-export default function ProtectedLayout({
+export default async function ProtectedLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  return <AppShell snapshot={getDemoSnapshot()}>{children}</AppShell>;
+  const snapshot = await getFinanceSnapshot();
+
+  return <AppShell snapshot={snapshot}>{children}</AppShell>;
 }

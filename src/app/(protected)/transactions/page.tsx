@@ -1,6 +1,8 @@
 import { TransactionsView } from "@/components/transactions/transactions-view";
-import { getDemoSnapshot } from "@/lib/finance/demo-data";
+import { getFinanceSnapshot } from "@/lib/finance/snapshot";
 
-export default function TransactionsPage() {
-  return <TransactionsView snapshot={getDemoSnapshot()} />;
+export default async function TransactionsPage() {
+  const snapshot = await getFinanceSnapshot();
+
+  return <TransactionsView snapshot={snapshot} />;
 }

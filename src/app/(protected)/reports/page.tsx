@@ -1,6 +1,8 @@
 import { ReportsView } from "@/components/reports/reports-view";
-import { getDemoSnapshot } from "@/lib/finance/demo-data";
+import { getFinanceSnapshot } from "@/lib/finance/snapshot";
 
-export default function ReportsPage() {
-  return <ReportsView snapshot={getDemoSnapshot()} />;
+export default async function ReportsPage() {
+  const snapshot = await getFinanceSnapshot();
+
+  return <ReportsView snapshot={snapshot} />;
 }

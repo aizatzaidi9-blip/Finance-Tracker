@@ -1,6 +1,8 @@
 import { DashboardView } from "@/components/dashboard/dashboard-view";
-import { getDemoSnapshot } from "@/lib/finance/demo-data";
+import { getFinanceSnapshot } from "@/lib/finance/snapshot";
 
-export default function DashboardPage() {
-  return <DashboardView snapshot={getDemoSnapshot()} />;
+export default async function DashboardPage() {
+  const snapshot = await getFinanceSnapshot();
+
+  return <DashboardView snapshot={snapshot} />;
 }
