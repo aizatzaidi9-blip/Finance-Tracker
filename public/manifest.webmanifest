@@ -1,0 +1,17 @@
+{
+  "name": "Harian & Simpanan",
+  "short_name": "Duit",
+  "description": "Penjejak kewangan peribadi untuk Duit Masuk dan Duit Keluar.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#F7F8FC",
+  "theme_color": "#6C4CF5",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

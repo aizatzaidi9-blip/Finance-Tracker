@@ -1,0 +1,30 @@
+insert into public.categories (id, user_id, name, type, icon, colour, is_default, is_favourite)
+values
+  ('00000000-0000-4000-8000-000000000101', null, 'Gaji', 'income', 'wallet', '#6C4CF5', true, true),
+  ('00000000-0000-4000-8000-000000000102', null, 'Bonus / Komisen', 'income', 'trophy', '#FF9F1C', true, false),
+  ('00000000-0000-4000-8000-000000000103', null, 'Freelance', 'income', 'briefcase', '#4361EE', true, false),
+  ('00000000-0000-4000-8000-000000000104', null, 'Dividen', 'income', 'sprout', '#12B76A', true, false),
+  ('00000000-0000-4000-8000-000000000105', null, 'Refund / Cashback', 'income', 'refresh', '#00BFA6', true, false),
+  ('00000000-0000-4000-8000-000000000106', null, 'Hadiah', 'income', 'gift', '#FF4567', true, false),
+  ('00000000-0000-4000-8000-000000000107', null, 'Faedah', 'income', 'percent', '#14B8A6', true, false),
+  ('00000000-0000-4000-8000-000000000108', null, 'Pelaburan', 'income', 'chart', '#4361EE', true, false),
+  ('00000000-0000-4000-8000-000000000109', null, 'Lain-lain Pendapatan', 'income', 'more', '#667085', true, false),
+  ('00000000-0000-4000-8000-000000000201', null, 'Makanan & Minuman', 'expense', 'utensils', '#FF9F1C', true, true),
+  ('00000000-0000-4000-8000-000000000202', null, 'Pengangkutan', 'expense', 'car', '#4361EE', true, false),
+  ('00000000-0000-4000-8000-000000000203', null, 'Bil & Utiliti', 'expense', 'receipt', '#12B76A', true, false),
+  ('00000000-0000-4000-8000-000000000204', null, 'Rumah / Sewa', 'expense', 'home', '#6C4CF5', true, false),
+  ('00000000-0000-4000-8000-000000000205', null, 'Beli-belah', 'expense', 'shopping', '#8B5CF6', true, false),
+  ('00000000-0000-4000-8000-000000000206', null, 'Hiburan', 'expense', 'music', '#FF4567', true, false),
+  ('00000000-0000-4000-8000-000000000207', null, 'Kesihatan', 'expense', 'heart', '#F43F5E', true, false),
+  ('00000000-0000-4000-8000-000000000208', null, 'Pendidikan', 'expense', 'graduation', '#2563EB', true, false),
+  ('00000000-0000-4000-8000-000000000209', null, 'Pakaian', 'expense', 'shirt', '#EC4899', true, false),
+  ('00000000-0000-4000-8000-000000000210', null, 'Keluarga', 'expense', 'users', '#00BFA6', true, false),
+  ('00000000-0000-4000-8000-000000000211', null, 'Langganan', 'expense', 'repeat', '#64748B', true, false),
+  ('00000000-0000-4000-8000-000000000212', null, 'Derma', 'expense', 'hand', '#12B76A', true, false),
+  ('00000000-0000-4000-8000-000000000213', null, 'Lain-lain', 'expense', 'more', '#667085', true, false)
+on conflict (id) do update
+set name = excluded.name,
+    type = excluded.type,
+    icon = excluded.icon,
+    colour = excluded.colour,
+    is_default = excluded.is_default;
