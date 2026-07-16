@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Bell, Eye, EyeOff, Plus, ReceiptText, TrendingUp } from "lucide-react";
 import { Area, AreaChart, Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { motion } from "framer-motion";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { CategoryIcon } from "@/components/finance/category-icon";
 import { formatMYR, totalBalance } from "@/lib/finance/money";
@@ -12,7 +12,13 @@ import type { FinanceSnapshot } from "@/types/finance";
 
 export function DashboardView({ snapshot }: { snapshot: FinanceSnapshot }) {
   const [visible, setVisible] = useState(true);
+  const [chartsReady, setChartsReady] = useState(false);
   const hasTransactions = snapshot.transactions.length > 0;
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setChartsReady(true), 180);
+    return () => window.clearTimeout(timer);
+  }, []);
   const categoryById = useMemo(
     () => new Map(snapshot.categories.map((category) => [category.id, category])),
     [snapshot.categories],
@@ -82,11 +88,15 @@ export function DashboardView({ snapshot }: { snapshot: FinanceSnapshot }) {
           <p className="text-sm font800 text-[#667085]">Jumlah Keseluruhan</p>
           <p className="mt-2 text-2xl font900">{visible ? formatMYR(totalBalance(snapshot.balances)) : "RM •••••"}</p>
           <div className="mt-2 h-14">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={(hasTransactions ? [12, 19, 16, 24, 22, 29, 27, 34] : [8, 8, 9, 9, 10, 10, 10, 11]).map((value, index) => ({ index, value }))}>
-                <Area type="monotone" dataKey="value" stroke="#6C4CF5" fill="#EDE9FE" strokeWidth={3} />
-              </AreaChart>
-            </ResponsiveContainer>
+            {chartsReady ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={(hasTransactions ? [12, 19, 16, 24, 22, 29, 27, 34] : [8, 8, 9, 9, 10, 10, 10, 11]).map((value, index) => ({ index, value }))}>
+                  <Area type="monotone" dataKey="value" stroke="#6C4CF5" fill="#EDE9FE" strokeWidth={3} />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full animate-pulse rounded-2xl bg-[#F2F4F7]" />
+            )}
           </div>
         </div>
       </div>
@@ -103,16 +113,20 @@ export function DashboardView({ snapshot }: { snapshot: FinanceSnapshot }) {
             <span className="text-xs font800 text-[#4361EE]">Julai 2026</span>
           </div>
           <div className="relative h-52">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={expenseBreakdown.length ? expenseBreakdown : [{ amount: 1, category: { id: "empty", colour: "#EAECF0" } }]} dataKey="amount" nameKey="category.name" innerRadius={58} outerRadius={84} paddingAngle={3}>
-                  {(expenseBreakdown.length ? expenseBreakdown : [{ amount: 1, category: { id: "empty", colour: "#EAECF0" } }]).map((item) => (
-                    <Cell key={item.category?.id} fill={item.category?.colour ?? "#667085"} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => formatMYR(Number(value))} />
-              </PieChart>
-            </ResponsiveContainer>
+            {chartsReady ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={expenseBreakdown.length ? expenseBreakdown : [{ amount: 1, category: { id: "empty", colour: "#EAECF0" } }]} dataKey="amount" nameKey="category.name" innerRadius={58} outerRadius={84} paddingAngle={3}>
+                    {(expenseBreakdown.length ? expenseBreakdown : [{ amount: 1, category: { id: "empty", colour: "#EAECF0" } }]).map((item) => (
+                      <Cell key={item.category?.id} fill={item.category?.colour ?? "#667085"} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => formatMYR(Number(value))} />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="mx-auto mt-6 h-36 w-36 animate-pulse rounded-full bg-[#F2F4F7]" />
+            )}
             <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
               <span className="text-xs font800 text-[#667085]">Jumlah</span>
               <span className="font900">{formatMYR(monthlyExpense)}</span>

@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 
 import { getDemoSnapshot } from "@/lib/finance/demo-data";
@@ -46,7 +47,9 @@ type TransactionRow = {
   created_at: string;
 };
 
-export async function getFinanceSnapshot(): Promise<FinanceSnapshot | SetupRequiredSnapshot> {
+export const getFinanceSnapshot = cache(async function getFinanceSnapshot(): Promise<
+  FinanceSnapshot | SetupRequiredSnapshot
+> {
   const supabase = await createServerSupabase();
 
   if (!supabase) {
@@ -152,7 +155,7 @@ export async function getFinanceSnapshot(): Promise<FinanceSnapshot | SetupRequi
       .from("balances")
       .upsert({ user_id: userId }, { onConflict: "user_id", ignoreDuplicates: true });
   }
-}
+});
 
 function mapCategory(row: CategoryRow): Category {
   return {
