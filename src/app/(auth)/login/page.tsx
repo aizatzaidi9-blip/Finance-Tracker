@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Loader2, Mail, ShieldCheck } from "lucide-react";
+import { motion } from "framer-motion";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -47,7 +48,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-dvh bg-[#F7F8FC] px-5 py-5 text-[#172033]">
+    <main className="min-h-dvh bg-[radial-gradient(circle_at_top_left,#EDE9FE,transparent_38%),linear-gradient(180deg,#FFFFFF_0%,#F7F8FC_70%)] px-5 py-5 text-[#172033]">
       <section className="mx-auto flex min-h-[calc(100dvh-2.5rem)] w-full max-w-md flex-col">
         <Link
           href="/"
@@ -56,8 +57,14 @@ export default function LoginPage() {
         >
           <ArrowLeft size={20} />
         </Link>
-        <div className="mt-8 rounded-[32px] bg-white p-5 shadow-[0_22px_60px_rgba(45,52,88,0.11)]">
-          <div className="mb-7 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#6C4CF5] to-[#4361EE] text-white">
+        <motion.div
+          key={mode}
+          initial={{ opacity: 0, y: 12, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+          className="mt-8 rounded-[34px] bg-white/95 p-5 shadow-[0_22px_60px_rgba(45,52,88,0.10)] backdrop-blur"
+        >
+          <div className="mb-7 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#6C4CF5] to-[#4361EE] text-white shadow-lg shadow-indigo-500/20">
             <ShieldCheck size={26} />
           </div>
           <h1 className="text-3xl font900">
@@ -103,17 +110,17 @@ export default function LoginPage() {
                   : "Hantar pautan"}
             </Button>
           </div>
-        </div>
+        </motion.div>
 
         <div className="mt-5 grid grid-cols-2 gap-3 text-sm font800">
           <button
-            className="min-h-12 rounded-2xl bg-white text-[#6C4CF5] shadow-sm"
+            className="min-h-12 rounded-2xl bg-white/95 text-[#6C4CF5] shadow-[0_8px_26px_rgba(45,52,88,0.08)] transition active:scale-[0.98]"
             onClick={() => setMode(mode === "signup" ? "login" : "signup")}
           >
             {mode === "signup" ? "Saya sudah ada akaun" : "Daftar akaun"}
           </button>
           <button
-            className="min-h-12 rounded-2xl bg-white text-[#667085] shadow-sm"
+            className="min-h-12 rounded-2xl bg-white/95 text-[#667085] shadow-[0_8px_26px_rgba(45,52,88,0.08)] transition active:scale-[0.98]"
             onClick={() => setMode(mode === "reset" ? "login" : "reset")}
           >
             {mode === "reset" ? "Kembali log masuk" : "Lupa kata laluan"}

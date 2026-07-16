@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { ArrowDown, ArrowLeft, ArrowUp, Check, ChevronRight, Coins, Divide, Pencil, Plus, Repeat2, X } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { toast } from "sonner";
 
 import { saveTransactionAction } from "@/app/actions/transactions";
@@ -48,6 +48,7 @@ export function TransactionSheet({
 }
 
 function SheetContent({ snapshot, close }: { snapshot: FinanceSnapshot; close: () => void }) {
+  const reduceMotion = useReducedMotion();
   const [step, setStep] = useState<Step>("type");
   const [type, setType] = useState<TransactionType | null>(null);
   const [destination, setDestination] = useState<IncomeDestination | null>(null);
@@ -124,29 +125,38 @@ function SheetContent({ snapshot, close }: { snapshot: FinanceSnapshot; close: (
   }
 
   return (
-    <motion.div className="fixed inset-0 z-50 bg-slate-950/35" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+    <motion.div className="fixed inset-0 z-50 bg-slate-950/30 backdrop-blur-[2px]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
       <motion.section
-        initial={{ y: "100%" }}
-        animate={{ y: 0 }}
+        initial={reduceMotion ? false : { y: "100%", scale: 0.98 }}
+        animate={{ y: 0, scale: 1 }}
         exit={{ y: "100%" }}
-        transition={{ type: "spring", damping: 28, stiffness: 260 }}
-        className="absolute inset-x-0 bottom-0 mx-auto max-h-[92dvh] max-w-md overflow-hidden rounded-t-[34px] bg-[#F7F8FC] shadow-2xl"
+        transition={{ type: "spring", damping: 30, stiffness: 300, mass: 0.9 }}
+        className="absolute inset-x-0 bottom-0 mx-auto max-h-[94dvh] max-w-md overflow-hidden rounded-t-[34px] bg-[#F7F8FC] shadow-[0_-24px_70px_rgba(15,23,42,0.24)]"
       >
-        <div className="flex items-center justify-between px-5 pb-2 pt-4">
-          <button className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm" onClick={step === "type" ? close : () => setStep(previousStep(step, type, destination))} aria-label="Kembali">
+        <div className="mx-auto mt-3 h-1.5 w-12 rounded-full bg-[#D0D5DD]" />
+        <div className="flex items-center justify-between px-5 pb-2 pt-3">
+          <button className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-[0_8px_24px_rgba(45,52,88,0.08)] transition active:scale-95" onClick={step === "type" ? close : () => setStep(previousStep(step, type, destination))} aria-label="Kembali">
             {step === "type" ? <X size={20} /> : <ArrowLeft size={20} />}
           </button>
           <p className="font900">{type === "expense" ? "Duit Keluar" : type === "income" ? "Duit Masuk" : "Tambah Transaksi"}</p>
           <div className="h-11 w-11" />
         </div>
-        <div className="max-h-[calc(92dvh-68px)] overflow-y-auto px-5 pb-[max(24px,env(safe-area-inset-bottom))]">
+        <div className="max-h-[calc(94dvh-78px)] overflow-y-auto px-5 pb-[max(24px,env(safe-area-inset-bottom))]">
           <Progress step={step} type={type} />
+          <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={step}
+            initial={reduceMotion ? false : { opacity: 0, x: 18, filter: "blur(3px)" }}
+            animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+            exit={reduceMotion ? undefined : { opacity: 0, x: -12, filter: "blur(3px)" }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+          >
           {step === "type" ? (
             <div className="space-y-4 pt-8">
               <h2 className="text-center text-lg font900">Apa yang anda nak rekod?</h2>
               <ChoiceCard title="Duit Masuk" description="Tambah pendapatan atau penerimaan wang" colour="#12B76A" icon={<ArrowDown />} onClick={() => chooseType("income")} />
               <ChoiceCard title="Duit Keluar" description="Catat perbelanjaan anda" colour="#FF4567" icon={<ArrowUp />} onClick={() => chooseType("expense")} />
-              <div className="rounded-[28px] bg-white p-5 text-center text-sm font700 text-[#667085] shadow-sm">
+              <div className="rounded-[28px] bg-white/90 p-5 text-center text-sm font700 text-[#667085] shadow-[0_10px_30px_rgba(45,52,88,0.06)]">
                 Rekod hanya dua jenis transaksi: Duit Masuk atau Duit Keluar.
               </div>
             </div>
@@ -306,6 +316,8 @@ function SheetContent({ snapshot, close }: { snapshot: FinanceSnapshot; close: (
               <Button className="w-full" variant="secondary" onClick={() => setStep("type")}>Tambah Lagi</Button>
             </div>
           ) : null}
+          </motion.div>
+          </AnimatePresence>
         </div>
       </motion.section>
     </motion.div>
@@ -342,22 +354,22 @@ function Progress({ step, type }: { step: Step; type: TransactionType | null }) 
 
 function ChoiceCard({ title, description, colour, icon, onClick }: { title: string; description: string; colour: string; icon: React.ReactNode; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="flex min-h-28 w-full items-center gap-4 rounded-[28px] border border-[#EAECF0] bg-white p-4 text-left shadow-sm transition active:scale-[0.99]">
+    <motion.button whileTap={{ scale: 0.985 }} onClick={onClick} className="flex min-h-28 w-full items-center gap-4 rounded-[28px] border border-white/80 bg-white/95 p-4 text-left shadow-[0_12px_34px_rgba(45,52,88,0.08)] transition">
       <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-white" style={{ backgroundColor: colour }}>{icon}</span>
       <span className="min-w-0 flex-1"><span className="block font900">{title}</span><span className="mt-1 block text-sm font700 leading-6 text-[#667085]">{description}</span></span>
       <ChevronRight size={20} />
-    </button>
+    </motion.button>
   );
 }
 
 function DestinationCard({ title, description, active, onClick, tone = "purple" }: { title: string; description: string; active: boolean; onClick: () => void; tone?: "purple" | "green" | "orange" }) {
   const colour = tone === "green" ? "#12B76A" : tone === "orange" ? "#FF9F1C" : "#6C4CF5";
   return (
-    <button onClick={onClick} className={active ? "flex w-full items-center gap-4 rounded-[26px] border-2 border-[#6C4CF5] bg-white p-4 text-left shadow-sm" : "flex w-full items-center gap-4 rounded-[26px] border border-[#EAECF0] bg-white p-4 text-left shadow-sm"}>
+    <motion.button whileTap={{ scale: 0.985 }} onClick={onClick} className={active ? "flex w-full items-center gap-4 rounded-[26px] border-2 border-[#6C4CF5] bg-white p-4 text-left shadow-[0_14px_36px_rgba(108,76,245,0.12)]" : "flex w-full items-center gap-4 rounded-[26px] border border-white/80 bg-white/95 p-4 text-left shadow-[0_10px_30px_rgba(45,52,88,0.07)]"}>
       <span className="flex h-12 w-12 items-center justify-center rounded-2xl text-white" style={{ backgroundColor: colour }}>{tone === "orange" ? <Divide /> : <Coins />}</span>
       <span className="flex-1"><span className="block font900">{title}</span><span className="text-sm font700 leading-6 text-[#667085]">{description}</span></span>
       <span className={active ? "h-6 w-6 rounded-full border-[7px] border-[#6C4CF5]" : "h-6 w-6 rounded-full border-2 border-[#D0D5DD]"} />
-    </button>
+    </motion.button>
   );
 }
 

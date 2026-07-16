@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, Eye, EyeOff, TrendingUp } from "lucide-react";
+import { Bell, Eye, EyeOff, Plus, ReceiptText, TrendingUp } from "lucide-react";
 import { Area, AreaChart, Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { motion } from "framer-motion";
 import { useMemo, useState } from "react";
@@ -12,6 +12,7 @@ import type { FinanceSnapshot } from "@/types/finance";
 
 export function DashboardView({ snapshot }: { snapshot: FinanceSnapshot }) {
   const [visible, setVisible] = useState(true);
+  const hasTransactions = snapshot.transactions.length > 0;
   const categoryById = useMemo(
     () => new Map(snapshot.categories.map((category) => [category.id, category])),
     [snapshot.categories],
@@ -41,15 +42,19 @@ export function DashboardView({ snapshot }: { snapshot: FinanceSnapshot }) {
       <header className="flex items-center justify-between">
         <div>
           <p className="text-sm font800 text-[#667085]">{greeting()},</p>
-          <h1 className="text-3xl font900 tracking-normal">Syahmi!</h1>
+          <h1 className="text-3xl font900 tracking-normal">
+            {snapshot.profile.displayName || "Pengguna"}!
+          </h1>
         </div>
         <div className="flex items-center gap-2">
-          <button className="relative flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm" aria-label="Notifikasi">
+          <button className="relative flex h-11 w-11 items-center justify-center rounded-full bg-white/90 shadow-[0_8px_24px_rgba(45,52,88,0.08)] backdrop-blur transition active:scale-95" aria-label="Notifikasi">
             <Bell size={19} />
-            <span className="absolute right-2 top-2 h-4 w-4 rounded-full bg-[#FF4567] text-[10px] font900 text-white">3</span>
+            {hasTransactions ? (
+              <span className="absolute right-2 top-2 h-4 w-4 rounded-full bg-[#FF4567] text-[10px] font900 text-white">3</span>
+            ) : null}
           </button>
           <button
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/90 shadow-[0_8px_24px_rgba(45,52,88,0.08)] backdrop-blur transition active:scale-95"
             onClick={() => setVisible((value) => !value)}
             aria-label={visible ? "Sembunyikan baki" : "Tunjuk baki"}
           >
@@ -73,12 +78,12 @@ export function DashboardView({ snapshot }: { snapshot: FinanceSnapshot }) {
           visible={visible}
           gradient="from-[#12B76A] to-[#00BFA6]"
         />
-        <div className="rounded-[28px] border border-[#EAECF0] bg-white p-4 shadow-sm">
+        <div className="rounded-[28px] border border-white/80 bg-white/90 p-4 shadow-[0_14px_42px_rgba(45,52,88,0.08)] backdrop-blur">
           <p className="text-sm font800 text-[#667085]">Jumlah Keseluruhan</p>
           <p className="mt-2 text-2xl font900">{visible ? formatMYR(totalBalance(snapshot.balances)) : "RM •••••"}</p>
           <div className="mt-2 h-14">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={[12, 19, 16, 24, 22, 29, 27, 34].map((value, index) => ({ index, value }))}>
+              <AreaChart data={(hasTransactions ? [12, 19, 16, 24, 22, 29, 27, 34] : [8, 8, 9, 9, 10, 10, 10, 11]).map((value, index) => ({ index, value }))}>
                 <Area type="monotone" dataKey="value" stroke="#6C4CF5" fill="#EDE9FE" strokeWidth={3} />
               </AreaChart>
             </ResponsiveContainer>
@@ -91,7 +96,7 @@ export function DashboardView({ snapshot }: { snapshot: FinanceSnapshot }) {
         <MetricCard label="Duit Keluar bulan ini" amount={monthlyExpense} tone="coral" />
       </section>
 
-      <section className="rounded-[30px] bg-white p-4 shadow-[0_18px_50px_rgba(45,52,88,0.08)] lg:grid lg:grid-cols-[260px_1fr] lg:gap-6">
+      <section className="rounded-[30px] bg-white/95 p-4 shadow-[0_18px_50px_rgba(45,52,88,0.08)] backdrop-blur lg:grid lg:grid-cols-[260px_1fr] lg:gap-6">
         <div>
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font900">Ringkasan Bulan Ini</h2>
@@ -100,8 +105,8 @@ export function DashboardView({ snapshot }: { snapshot: FinanceSnapshot }) {
           <div className="relative h-52">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={expenseBreakdown} dataKey="amount" nameKey="category.name" innerRadius={58} outerRadius={84} paddingAngle={3}>
-                  {expenseBreakdown.map((item) => (
+                <Pie data={expenseBreakdown.length ? expenseBreakdown : [{ amount: 1, category: { id: "empty", colour: "#EAECF0" } }]} dataKey="amount" nameKey="category.name" innerRadius={58} outerRadius={84} paddingAngle={3}>
+                  {(expenseBreakdown.length ? expenseBreakdown : [{ amount: 1, category: { id: "empty", colour: "#EAECF0" } }]).map((item) => (
                     <Cell key={item.category?.id} fill={item.category?.colour ?? "#667085"} />
                   ))}
                 </Pie>
@@ -115,7 +120,7 @@ export function DashboardView({ snapshot }: { snapshot: FinanceSnapshot }) {
           </div>
         </div>
         <div className="space-y-3">
-          {expenseBreakdown.map((item) => (
+          {expenseBreakdown.length ? expenseBreakdown.map((item) => (
             <div key={item.category?.id} className="flex items-center gap-3">
               <CategoryIcon icon={item.category?.icon ?? "more"} colour={item.category?.colour ?? "#667085"} size={34} />
               <div className="min-w-0 flex-1">
@@ -124,16 +129,18 @@ export function DashboardView({ snapshot }: { snapshot: FinanceSnapshot }) {
               </div>
               <span className="text-sm font900">{Math.round((item.amount / monthlyExpense) * 100)}%</span>
             </div>
-          ))}
+          )) : <EmptyMini label="Belum ada perbelanjaan bulan ini" />}
         </div>
       </section>
 
-      <section className="rounded-[28px] bg-gradient-to-br from-[#4361EE] to-[#6C4CF5] p-5 text-white shadow-lg shadow-indigo-500/25">
+      <section className="rounded-[28px] bg-gradient-to-br from-[#4361EE] to-[#6C4CF5] p-5 text-white shadow-[0_18px_50px_rgba(67,97,238,0.22)]">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-sm font900">Insight Hari Ini</p>
             <p className="mt-2 text-sm leading-6 text-white/90">
-              Perbelanjaan makanan meningkat 18% berbanding minggu lepas.
+              {hasTransactions
+                ? "Perbelanjaan makanan meningkat 18% berbanding minggu lepas."
+                : "Mulakan dengan rekod pertama untuk lihat insight kewangan anda."}
             </p>
           </div>
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/18">
@@ -147,10 +154,10 @@ export function DashboardView({ snapshot }: { snapshot: FinanceSnapshot }) {
           <h2 className="font900">Transaksi Terkini</h2>
           <Link href="/transactions" className="text-sm font800 text-[#6C4CF5]">Lihat semua</Link>
         </div>
-        {snapshot.transactions.slice(0, 5).map((transaction) => {
+        {snapshot.transactions.length ? snapshot.transactions.slice(0, 5).map((transaction) => {
           const category = categoryById.get(transaction.categoryId);
           return (
-            <motion.div layout key={transaction.id} className="flex items-center gap-3 rounded-[24px] bg-white p-3 shadow-sm">
+            <motion.div layout key={transaction.id} className="flex items-center gap-3 rounded-[24px] bg-white/95 p-3 shadow-[0_10px_30px_rgba(45,52,88,0.07)]">
               <CategoryIcon icon={category?.icon ?? "more"} colour={category?.colour ?? "#667085"} />
               <div className="min-w-0 flex-1">
                 <p className="truncate font800">{category?.name}</p>
@@ -163,7 +170,17 @@ export function DashboardView({ snapshot }: { snapshot: FinanceSnapshot }) {
               </p>
             </motion.div>
           );
-        })}
+        }) : (
+          <div className="rounded-[28px] border border-dashed border-[#D0D5DD] bg-white/80 p-6 text-center shadow-sm">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F2F0FF] text-[#6C4CF5]">
+              <ReceiptText size={26} />
+            </div>
+            <h3 className="mt-4 font900">Belum ada transaksi</h3>
+            <p className="mt-2 text-sm leading-6 text-[#667085]">
+              Tekan butang <span className="font900 text-[#6C4CF5]">+</span> untuk tambah Duit Masuk atau Duit Keluar pertama anda.
+            </p>
+          </div>
+        )}
       </section>
     </div>
   );
@@ -171,7 +188,7 @@ export function DashboardView({ snapshot }: { snapshot: FinanceSnapshot }) {
 
 function BalanceCard({ title, subtitle, amount, gradient, visible }: { title: string; subtitle: string; amount: number; gradient: string; visible: boolean }) {
   return (
-    <motion.div whileTap={{ scale: 0.99 }} className={`rounded-[30px] bg-gradient-to-br ${gradient} p-5 text-white shadow-lg shadow-indigo-500/20`}>
+    <motion.div whileTap={{ scale: 0.985 }} className={`rounded-[30px] bg-gradient-to-br ${gradient} p-5 text-white shadow-[0_18px_48px_rgba(67,97,238,0.20)]`}>
       <p className="text-sm font900 text-white/90">{title}</p>
       <motion.p key={`${amount}-${visible}`} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="mt-5 text-3xl font900 tracking-normal">
         {visible ? formatMYR(amount) : "RM •••••"}
@@ -183,12 +200,21 @@ function BalanceCard({ title, subtitle, amount, gradient, visible }: { title: st
 
 function MetricCard({ label, amount, tone }: { label: string; amount: number; tone: "green" | "coral" }) {
   return (
-    <div className="rounded-[24px] bg-white p-4 shadow-sm">
+    <div className="rounded-[24px] bg-white/95 p-4 shadow-[0_10px_30px_rgba(45,52,88,0.07)]">
       <p className="text-xs font800 text-[#667085]">{label}</p>
       <p className={tone === "green" ? "mt-2 text-xl font900 text-[#12B76A]" : "mt-2 text-xl font900 text-[#FF4567]"}>
         {formatMYR(amount)}
       </p>
       <p className="mt-1 text-xs font800 text-[#667085]">+12% berbanding bulan lepas</p>
+    </div>
+  );
+}
+
+function EmptyMini({ label }: { label: string }) {
+  return (
+    <div className="flex min-h-28 flex-col items-center justify-center rounded-[24px] bg-[#F7F8FC] p-4 text-center">
+      <Plus className="text-[#98A2B3]" size={22} />
+      <p className="mt-2 text-sm font800 text-[#667085]">{label}</p>
     </div>
   );
 }
